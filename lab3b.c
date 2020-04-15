@@ -74,14 +74,21 @@ char_list_t* get_list(char* points)
 	int len = strlen(points);
 	char_list_t* start = (char_list_t*) malloc(sizeof(char_list_t));
         char_list_t* now = start;
+	char last = 0;
 	for (int i = 0; i < len; i++)
 	{
-		now->str = points[i];
-		now->next = (char_list_t*) malloc(sizeof(char_list_t));
-		now = now->next;
+		if (last != ' ' || points[i] != ' ')
+		{
+			now->str = points[i];
+			now->next = (char_list_t*) malloc(sizeof(char_list_t));
+			now = now->next;
+			last = points[i];
+		}
 	}
-	now->next = (char_list_t*) malloc(sizeof(char_list_t));
-	now->next->str = ' ';
+	if (last != ' ')
+		now->str = ' ';
+	else
+		now = NULL;
 	return start;
 }
 
@@ -114,7 +121,7 @@ char listindex(char_list_t* start, int index)
 	return start->str;
 }
 
-char_list_t* modify(char_list_t* start)
+void modify(char_list_t* start)
 {
 	int len = listlen(start);
 	char_list_t* now = start;
@@ -128,6 +135,7 @@ char_list_t* modify(char_list_t* start)
 	for (int i = 0; i < len; i++)
 	{
 		c_pon++;
+		//printf("%c\n", now->str);
 		if (now->str == ' ')
 		{
 			space = now;
@@ -135,8 +143,22 @@ char_list_t* modify(char_list_t* start)
 		}
 		if ((c_pon - before) == 80 || i == len - 1)
 		{
+			if (i == len - 1 && space == NULL)
+				return;
 			if (i == len - 1)
+                        {
+                                space = now;
+                                last = i;
+                        }
+			else if (space == NULL)
 			{
+				i++;
+				char_list_t* temp1 = now->next;
+				char_list_t* created = (char_list_t*) malloc(sizeof(char_list_t));
+				created->str = ' ';
+				now->next = created;
+				created->next = temp1;
+				now = now->next;
 				space = now;
 				last = i;
 			}
@@ -162,12 +184,12 @@ char_list_t* modify(char_list_t* start)
 				need = havent / c_spaces;
 			if (c_spaces != 0)
 				addition = havent % c_spaces;
-			//printf("count: %d\n", c_spaces);
+			//printf("count: %p\n", &kek);
 			//printf("havent: %d\n", havent);
 			//printf("need: %d\n", need);
 			//printf("addition: %d\n", addition);
 			char_list_t* now_1 = kek;
-			for (int i1 = 0; i1 < last - before; i1++)
+			for (int i1 = 0; now_1 != NULL && i1 < last - before; i1++)
 			{
 				char_list_t* temp2 = now_1->next;
 				if (now_1->str == ' ')
@@ -201,8 +223,9 @@ char_list_t* modify(char_list_t* start)
 				c_pon = before;
 				space->next = temp;
 				space->str = '\n';
-				now = space->next;
+				now = space;
 				kek = space->next;
+				space = NULL;
 			}
 		}
 		now = now->next;
