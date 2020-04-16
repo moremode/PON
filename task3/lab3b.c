@@ -88,7 +88,10 @@ char_list_t* get_list(char* points)
 	if (last != ' ')
 		now->str = ' ';
 	else
+	{
+
 		now = NULL;
+	}
 	return start;
 }
 
@@ -227,6 +230,7 @@ void modify(char_list_t* start)
 				kek = space->next;
 				space = NULL;
 			}
+			free(pon);
 		}
 		now = now->next;
 	}
@@ -244,5 +248,6 @@ int main()
 		modify(start);
 		print_list(start);
 		list_free(start);
+		free(kek);
 	}
 }
