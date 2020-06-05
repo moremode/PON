@@ -14,6 +14,12 @@ typedef struct hash_table
 hash_t*** table;
 hash_t* default_element;
 
+void clear_buffer()
+{
+	int c;
+	while ((c = getchar()) != '\n' && c != EOF) { }
+}
+
 int generate()
 {
 	if (SIZE < 0) return 2;
@@ -151,6 +157,7 @@ int action()
 {
 	int i;
 	scanf("%d", &i);
+	if (i == 0) clear_buffer();
 	if (i < 1 || i > 5) return 1;
 	if (i == 1)
 	{
