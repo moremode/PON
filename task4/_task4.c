@@ -68,7 +68,7 @@ int add(int key1, int key2, char* info)
 			table[key1][0]->key1--;
 			return 0;
 		}
-		else if (table[key1][i]->key2 == key2) return 4;
+		else if (table[key1][now_key]->key2 == key2) return 4;
 	}
 	return 6;
 }
