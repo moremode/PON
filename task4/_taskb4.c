@@ -40,6 +40,7 @@ int generate()
 		table[i][0] = (hash_t*) malloc(sizeof(hash_t));
 		if (table[i][0] == NULL) return 1;
 		table[i][0]->key1 = SIZE;
+		table[i][0]->key2 = -1;
 	}
 	return 0;
 }
@@ -50,13 +51,29 @@ int get_hash(int key)
 	return key % SIZE + 1;
 }
 
+hash_t** get_by(int key1)
+{
+	if (table == NULL) return NULL;
+        if (key1 < 0) return NULL;
+        int clear = -1;
+        for (int i = 0; i < SIZE; i++)
+        {
+                if (table[i] == NULL) return NULL;
+                if (table[i][0] == NULL) return NULL;
+                if (table[i][0]->key2 == key1) return table[i];
+		if (table[i][0]->key2 == -1 && clear == -1) clear = i;
+        }
+	if (clear == -1) return NULL;
+	return table[clear];
+}
+
 int get_left(int key1)
 {
 	if (table == NULL) return -1;
-	if (key1 < 0 || key1 >= SIZE) return -2;
-	if (table[key1] == NULL) return -1;
-        if (table[key1][0] == NULL) return -1;
-	return table[key1][0]->key1;
+	if (key1 < 0) return -2;
+	hash_t** ret = get_by(key1);
+	if (ret == NULL) return -1;
+	return ret[0]->key1;
 }
 
 int add(int key1, int key2, char* info)
@@ -65,20 +82,24 @@ int add(int key1, int key2, char* info)
 	int left = get_left(key1);
 	if (left < 0) return -left;
 	if (left == 0) return 3;
+	hash_t** space1 = get_by(key1);
+	space1[0]->key2 = key1;
 	for (int i = 0; i < SIZE; i++)
 	{
 		int now_key = get_hash(i + key2);
-		if (table[key1][now_key] == NULL || table[key1][now_key] == default_element)
+		if (space1[now_key] == NULL || space1[now_key] == default_element)
 		{
-			table[key1][now_key] = (hash_t*) malloc(sizeof(hash_t));
-			if (table[key1][now_key] == NULL) return 1;
-			table[key1][now_key]->key1 = key1;
-			table[key1][now_key]->key2 = key2;
-			table[key1][now_key]->info = info;
-			table[key1][0]->key1--;
+			space1[now_key] = (hash_t*) malloc(sizeof(hash_t));
+			if (space1[now_key] == NULL) return 1;
+			space1[now_key]->key1 = key1;
+			space1[now_key]->key2 = key2;
+			int len = strlen(info);
+			space1[now_key]->info = (char*) malloc(len + 1);
+			strcpy(space1[now_key]->info, info);
+			space1[0]->key1--;
 			return 0;
 		}
-		else if (table[key1][now_key]->key2 == key2) return 4;
+		else if (space1[now_key]->key2 == key2) return 4;
 	}
 	return 6;
 }
@@ -89,14 +110,19 @@ int rm(int key1, int key2)
         int left = get_left(key1);
         if (left < 0) return -left;
 	if (left == SIZE) return 3;
+	hash_t** space1 = get_by(key1);
+	if (space1[0]->key2 == -1) return 3;
 	for (int i = 0; i < SIZE; i++)
 	{
 		int now_key = get_hash(i + key2);
-		if (table[key1][now_key] == NULL) return 3;
-		if (table[key1][now_key]->key2 == key2)
+		if (space1[now_key] == NULL) return 3;
+		if (space1[now_key]->key2 == key2)
 		{
-			free(table[key1][now_key]);
-			table[key1][now_key] = default_element;
+			if (space1[now_key]->info) free(space1[now_key]->info);
+			free(space1[now_key]);
+			space1[now_key] = default_element;
+			space1[0]->key1++;
+			if (space1[0]->key1 == SIZE) space1[0]->key2 = -1;
 			return 0;
 		}
 	}
@@ -114,12 +140,12 @@ int print_table()
 		{
 			int key2 = get_hash(i2);
 			hash_t* el = table[key1][key2];
-			printf("TABLE[%d][%d] = ", key1, key2);
+			printf("TABLE[%d][%d] = ", key1, key2 - 1);
 			if (el == NULL) printf("NULL\n");
 			else
 			{
 				if (el->info == NULL) printf("INFO NULL\n");
-				else printf("%s\n", el->info);
+				else printf("key1=%d :: key2=%d :: %s", el->key1, el->key2, el->info);
 			}
 		}
 		printf("\n");
@@ -135,21 +161,22 @@ int free_table()
                 int key1 = i1;
                 if (table[key1] != NULL)
                 {
+			if (table[key1][0] != NULL) free(table[key1][0]);
                         for (int i2 = 0; i2 < SIZE; i2++)
                         {
                                 int key2 = get_hash(i2);
                                 hash_t* el = table[key1][key2];
-                                if (el != NULL)
+                                if (el != NULL && el != default_element)
                                 {
                                         if (el->info != NULL) free(el->info);
-                                        free(el);
+                                 	free(el);
                                 }
                         }
                         free(table[key1]);
                 }
         }
         free(table);
-        free(default_element);
+	if (default_element) free(default_element);
         return 0;
 }
 
@@ -160,13 +187,15 @@ int find(int key1, int key2)
         int left = get_left(key1);
         if (left < 0) return -left;
         if (left == SIZE) return 3;
+	hash_t** space1 = get_by(key1);
+	if (space1[0]->key2 == -1) return 3;
         for (int i = 0; i < SIZE; i++)
         {
                 int now_key = get_hash(i + key2);
-                if (table[key1][now_key] == NULL) return 3;
-                if (table[key1][now_key]->key2 == key2)
+                if (space1[now_key] == NULL) return 3;
+                if (space1[now_key]->key2 == key2)
                 {
-                        printf("TABLE[%d][%d]: %s\n", key1, key2, table[key1][now_key]->info);
+                        printf("TABLE[%d][%d]: %s\n", key1, key2, space1[now_key]->info);
 			return 0;
                 }
         }
@@ -266,6 +295,13 @@ int load_from_file()
 			int len = strlen(*sp) + strlen(*(sp + 1));
 			char* info = line + len + 2;
 			add(atoi(*sp), atoi(*(sp + 1)), info);
+			int i = 0;
+			while (*(sp + i))
+			{
+				free(*(sp + i));
+				i++;
+			}
+			free(sp);
     		}	
 
     		fclose(fp);
@@ -310,6 +346,7 @@ int action()
 		if (ret == 4) printf("ERROR: IS CREATED\n\n");
 		if (ret == 5) printf("ERROR: \n\n");
 		if (ret == 6) printf("ERROR: YA NE POMNU CHO ZA OSHIBKA(\n\n");
+		free(info);
 	}
 	if (i == 2)
 	{
