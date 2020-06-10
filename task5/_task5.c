@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include <time.h>
+#include <ctype.h>
 
 #define SIZE 20
 #define FILENAME "pon.txt"
@@ -297,6 +298,17 @@ int clear_fgets(char* str)
     		*pos = '\0';
 }
 
+int is_digit(char* input)
+{
+	int length = strlen(input) - 1;
+    	for (int i = 0; i < length; i++)
+        	if (!isdigit(input[i]))
+        	{
+			return 0;
+        	}
+	return 1;
+}
+
 int action()
 {
 	char* input = malloc(20);
@@ -312,6 +324,12 @@ int action()
 		printf("INPUT KEY: ");
 		fgets(input, 20, stdin);
 		int key = atoi(input);
+		if (!is_digit(input))
+		{
+			printf("INCORRECT INPUT\n\n");
+			free(input);
+                	return 1;
+		}
 		printf("INPUT INFO: ");
 		fgets(input, 20, stdin);
 		clear_fgets(input);
@@ -326,6 +344,12 @@ int action()
 		printf("INPUT KEY: ");
 		fgets(input, 20, stdin);
                 int key = atoi(input);
+		if (!is_digit(input))
+                {
+                        printf("INCORRECT INPUT\n\n");
+                        free(input);
+                        return 1;
+                }
 		timer_start();
 		int ret = rm(key);
 		timer_end();
@@ -337,6 +361,12 @@ int action()
 		printf("INPUT KEY: ");
                 fgets(input, 20, stdin);
                 int key = atoi(input);
+		if (!is_digit(input))
+                {
+                        printf("INCORRECT INPUT\n\n");
+                        free(input);
+                        return 1;
+                }
 		timer_start();
                 int ret = find(key);
 		timer_end();
@@ -348,6 +378,12 @@ int action()
 		printf("INPUT KEY: ");
                 fgets(input, 20, stdin);
                 int key = atoi(input);
+		if (!is_digit(input))
+                {
+                        printf("INCORRECT INPUT\n\n");
+                        free(input);
+                        return 1;
+                }
 		timer_start();
                 int ret = find_least(key);
 		timer_end();
