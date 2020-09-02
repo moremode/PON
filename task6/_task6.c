@@ -204,7 +204,7 @@ int add_edge(node_t* st, node_t* end)
 // 3 - info clear
 int graph_to_file_r(FILE* fp)
 {
-	if (!table) return 0;
+	if (!table) return 1;
 	for (int i = 0; i < count; i++)
 	{
 		node_t* now = table[i];
@@ -230,7 +230,7 @@ int graph_to_file_r(FILE* fp)
 
 int graph_to_file()
 {
-        if (!table) return 0;
+        if (!table) return 1;
         FILE *fp;
         fp = fopen("pon.dot", "w+");
         fprintf(fp, "digraph G {\n");
@@ -509,7 +509,7 @@ double** floyd(int*** spd_mtrx)
 	return matrix;
 }
 
-int find_min(node_t* n1, node_t* n2)
+int find_min(node_t* n1, node_t* n2, int flag)
 {
 	if (!n1 || !n2) return 1;
 	int** ret3[1];
@@ -517,15 +517,15 @@ int find_min(node_t* n1, node_t* n2)
 	int** ret = *(ret3);
 	int index1 = get_index(n1);
 	int index2 = get_index(n2);
-	//printf("MIN: %f\n", m[index1][index2]);
+	if (flag) printf("MIN: %f\n", m[index1][index2]);
 	if (m[index1][index2] != 1000000)
 	{
 		while (index1 != index2)
 		{
-			//printf("%s -> ", table[index1]->info);
+			if (flag) printf("%s -> ", table[index1]->info);
 			index1 = ret[index1][index2];
 		}
-		//printf("%s\n", table[index2]->info);
+		if (flag) printf("%s\n", table[index2]->info);
 	}
 	for (int i = 0; i < count; i++)
 	{
@@ -586,7 +586,7 @@ int timing(int cnt)
 			sprintf(xc, "%d", x);
             sprintf(yc, "%d", y);
 			//printf("%s %s\n", xc, yc);
-			find_min(find_name(xc), find_name(yc));
+			find_min(find_name(xc), find_name(yc), 0);
 			free(xc);
 			free(yc);
 		}
@@ -860,7 +860,7 @@ int action()
 			printf("NOT FOUND\n\n");
             return 1;
         }
-        int ret = find_min(n1, n2);
+        int ret = find_min(n1, n2, 1);
 	}
 	if (action_number == 7)
 	{
@@ -887,15 +887,15 @@ int main()
 	add_edge(find_name("4"), find_name("5"));
 	add_edge(find_name("5"), find_name("3"));*/
 	
-	for (int i = 1; i < 10; i++)
+	/*for (int i = 1; i < 10; i++)
 		timing(i * 30);
-	
-	/*load_from_file();
+	*/
+	load_from_file();
 	while(1)
     {
 		print_menu();
         action();
-    }*/
+    }
 }
 
 
