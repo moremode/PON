@@ -82,22 +82,6 @@ int add(int key, char* info, int size)
 	return 0;
 }
 
-int rm(int key)
-{
-	tree_t* now = mtree;
-	if (!now) return 1;
-	while (key != now->key)
-        {
-                if (key > now->key) now = now->right;
-                else now = now->left;
-                if (!now) return 1;
-        }
-	if (!now->info) return 2;
-	free(now->info);
-	now->info = NULL;
-	return 0;
-}
-
 int find(int key)
 {
 	tree_t* now = mtree;
@@ -185,6 +169,47 @@ int find_least(int key)
         return 0;
 }
 
+int rebuild(tree_t* tree)
+{
+	if (!tree) return 1;
+	if (tree->left) rebuild(tree->left);
+	if (tree->right) rebuild(tree->right);
+	if (tree->info)
+	{
+		add(tree->key, tree->info, strlen(tree->info));
+		free(tree->info);
+	}
+	free(tree);
+	return 0;
+}
+
+int rm(int key)
+{
+    tree_t* now = mtree;
+	tree_t* last = NULL;
+    if (!now) return 1;
+    while (key != now->key)
+    {
+		last = now;
+        if (key > now->key) now = now->right;
+        else now = now->left;
+        if (!now) return 1;
+    }
+    //if (!now->info) return 2;
+	if (last)
+	{
+		if (last->key < now->key)
+			last->right = NULL;
+		else
+			last->left = NULL;
+	} else mtree = NULL;
+	rebuild(now->left);
+	rebuild(now->right);
+	if (now->info) free(now->info);
+        free(now);
+   	return 0;
+}
+
 int print_tree_r(tree_t* now)
 {
 	if (!now) return 0;
@@ -192,7 +217,7 @@ int print_tree_r(tree_t* now)
 	if (!now->info) printf("REMOVED\n");
 	else printf("INFO: %s\n", now->info);
 	if (!now->left) printf("::LEFT ::NULL\n");
-        else printf("::LEFT ::KEY=%d\n", now->left->key);
+    else printf("::LEFT ::KEY=%d\n", now->left->key);
 	if (!now->right) printf("::RIGHT::NULL\n");
 	else printf("::RIGHT::KEY=%d\n", now->right->key);
 	if (now->left) print_tree_r(now->left);
@@ -228,6 +253,36 @@ int send_to_file()
         send_to_file_r(fp, mtree);
 	fclose(fp);
 }
+
+int graph_to_file_r(FILE* fp, tree_t* now)
+{
+        if (!now) return 1;
+        if (!fp) return 2;
+        if (now->info)
+        {
+                //fwrite(now->key, sizeof(int), 1, fp);
+                //fwrite(now->info, sizeof(char), strlen(now->info), fp);
+                if (now->left && now->left->info) fprintf(fp, "\"%d\\n%s\" -> \"%d\\n%s\";\n", now->key, now->info, now->left->key, now->left->info);
+                if (now->right && now->right->info) fprintf(fp, "\"%d\\n%s\" -> \"%d\\n%s\";\n", now->key, now->info, now->right->key, now->right->info);
+        }
+	else fprintf(fp, "\"%d\\n%s\"\n", now->key, now->info);
+        if (now->left) graph_to_file_r(fp, now->left);
+        if (now->right) graph_to_file_r(fp, now->right);
+}
+
+int graph_to_file()
+{
+        if (!mtree) return 0;
+        FILE *fp;
+        fp = fopen("pon.dot", "w+");
+	fprintf(fp, "digraph G {\n");
+        graph_to_file_r(fp, mtree);
+	fprintf(fp, "}");
+        fclose(fp);
+	system("dot -Tpng pon.dot -o outfile.png");
+	system("rm pon.dot");
+}
+
 
 int load_from_file()
 {
@@ -276,6 +331,39 @@ int free_tree()
 {
 	if (!mtree) return 0;
 	free_tree_r(mtree);
+	mtree = NULL;
+}
+
+int timing(int coun)
+{
+        tree_t* root = mtree;
+	int c = 10;
+        int n = c, k, cnt = coun, i, m;
+	size_t summ = 0;
+        clock_t first, last;
+        srand(time(NULL));
+        while (n-- > 0)
+        {
+		root = 0;
+                for (i = 0; i < cnt; )
+                {
+                        k = rand() * rand();
+                        if (!add(k, "PON", 3))
+                                ++i;
+                }
+                m = 0;
+                first = clock();
+                for (i = 0; i < 10000; ++i)
+                        if (!add(rand() * rand(), "NEPON", 5))
+                                ++m;
+                last = clock();
+                //printf("%d items was added\n", m);
+                printf("%ld\n", last - first);
+		summ += last - first;
+        	free_tree(root);
+	}
+	printf("Mid %d: %ld\n", cnt, (summ / c));
+        return 1;
 }
 
 int print_menu()
@@ -301,6 +389,7 @@ int clear_fgets(char* str)
 int is_digit(char* input)
 {
 	int length = strlen(input) - 1;
+	if (length == 0) return 0;
     	for (int i = 0; i < length; i++)
         	if (!isdigit(input[i]))
         	{
@@ -400,7 +489,7 @@ int action()
 	if (action_number == 6)
 	{
 		timer_start();
-		int ret = print_tree();
+		int ret = graph_to_file();
 		timer_end();
 		if (ret == 1) printf("TABLE CLEAR\n");
 	}
@@ -417,6 +506,8 @@ int action()
 
 int main()
 {
+//	for (int i = 0; i < 10; i++)
+//		timing(i * 1000000);
 	load_from_file();
 	while(1)
 	{
