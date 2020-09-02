@@ -489,10 +489,37 @@ double min(double n1, double n2)
 	return n1 > n2 ? n2 : n1;
 }
 
-double** floyd(int*** spd_mtrx)
+int** copy(int** from, int size)
+{
+	int** newa = (int**) malloc(size * sizeof(int*));
+	for (int i = 0; i < size; i++)
+	{
+		newa[i] = (int*) malloc(size * sizeof(int));
+		memcpy(newa[i], from[i], size * sizeof(int));
+	}
+	return newa;
+}
+
+double** copyd(double** from, int size)
+{
+	double** newa = (double**) malloc(size * sizeof(double*));
+	for (int i = 0; i < size; i++)
+	{
+		newa[i] = (double*) malloc(size * sizeof(double));
+		memcpy(newa[i], from[i], size * sizeof(double));
+	}
+	return newa;
+}
+
+
+double** floyd(int*** spd_mtrx, int*** least2, int*** least3, double*** l2, double*** l3, int i1, int i2)
 {
 	double** matrix = build_matrix();
 	int** matrix1 = p_matrix();
+	int** l21 = 0;
+	int** l31 = 0;
+	double** l22 = 0;
+	double** l32 = 0;
 	//print_matrixi(matrix1);
 	for (int k = 0; k < count; k++)
   		for (int i = 0; i < count; i++)
@@ -500,23 +527,49 @@ double** floyd(int*** spd_mtrx)
       			{
 					if (matrix[i][k] + matrix[k][j] < matrix[i][j])
 					{
+						if (i == i1 && j == i2)
+						{
+							if (l32)
+							{
+								for (int i = 0; i < count; i++)
+								{
+									free(l32[i]);
+									free(l31[i]);
+								}
+								free(l32);
+								free(l31);
+							}
+							l32 = l22;
+							l22 = copyd(matrix, count);
+							l31 = l21;
+							l21 = copy(matrix1, count);
+						}
 						matrix[i][j] = matrix[i][k] + matrix[k][j];
 						matrix1[i][j] = matrix1[i][k];
 					}
 				}
 	//print_matrix(matrix);
 	*spd_mtrx = matrix1;
+	*least2 = l21;
+	*least3 = l31;
+	*l2 = l22;
+	*l3 = l32;
 	return matrix;
 }
 
 int find_min(node_t* n1, node_t* n2, int flag)
 {
 	if (!n1 || !n2) return 1;
-	int** ret3[1];
-	double** m = floyd(ret3);
-	int** ret = *(ret3);
 	int index1 = get_index(n1);
+	int save = index1;
 	int index2 = get_index(n2);
+	int** ret3[1];
+	int** path2[1];
+	int** path3[1];
+	double** m2[1];
+	double** m3[1];
+	double** m = floyd(ret3, path2, path3, m2, m3, index1, index2);
+	int** ret = *(ret3);
 	if (flag) printf("MIN: %f\n", m[index1][index2]);
 	if (m[index1][index2] != 1000000)
 	{
@@ -527,12 +580,42 @@ int find_min(node_t* n1, node_t* n2, int flag)
 		}
 		if (flag) printf("%s\n", table[index2]->info);
 	}
+	index1 = save;
+	if (flag && *m2) printf("MIN-2: %f\n", (*m2)[index1][index2]);
+	if ((*m2) && (*m2)[index1][index2] != 1000000)
+	{
+		while (index1 != index2)
+		{
+			if (flag) printf("%s -> ", table[index1]->info);
+			index1 = (*path2)[index1][index2];
+		}
+		if (flag) printf("%s\n", table[index2]->info);
+	}
+	index1 = save;
+	if (flag && *m3) printf("MIN-3: %f\n", (*m3)[index1][index2]);
+	if ((*m3) && (*m3)[index1][index2] != 1000000)
+	{
+		while (index1 != index2)
+		{
+			if (flag) printf("%s -> ", table[index1]->info);
+			index1 = (*path3)[index1][index2];
+		}
+		if (flag) printf("%s\n", table[index2]->info);
+	}
 	for (int i = 0; i < count; i++)
 	{
 		free(m[i]);
 		free(ret[i]);
+		if (*m2) free((*m2)[i]);
+		if (*m3) free((*m3)[i]);
+		if (*path2) free((*path2)[i]);
+		if (*path3) free((*path3)[i]);
 	}
 	free(m);
+	if (*m2) free(*m2);
+	if (*m3) free(*m3);
+	if (*path2) free(*path2);
+	if (*path3) free(*path3);
 	free(ret);
 	return 0;
 }
