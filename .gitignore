@@ -1,5 +1,5 @@
-*
+/*
 !.gitignore
-!.cpp
-!.c
-!.h
+!*.cpp
+!*.c
+!*.h
