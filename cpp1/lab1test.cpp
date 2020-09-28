@@ -16,14 +16,14 @@ bool func2(int num)
 
 int main()
 {
-	int n, m;
+	int n, m, size;
 	int** matrix;
 	std::vector<int> b;
 	std::cout << "Input sizes: ";
 	if (Sage1::getSizes(n, m)) return 1;
 	std::cout << "Input matrix " << n << "x" << m << ": ";
-	if (Sage1::getMatrix(matrix, n, m)) return 1;
-	Sage1::printMatrix(matrix, n, m);
-	Sage1::createVector(b, matrix, n, m, func1, func2);
+	if (Sage1::getMatrix(matrix, n, m, size)) return 1;
+	Sage1::printMatrix(matrix, n, m, size);
+	Sage1::createVector(b, matrix, n, m, size, func1, func2);
 	Sage1::printVector(b);
 }
