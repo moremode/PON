@@ -7,16 +7,21 @@ TEST(ChangingN, chn)
 {
     Sage::DescFolium* df = new Sage::DescFolium(0);
     EXPECT_EQ(0, df->getN());
+    delete df;
     df = new Sage::DescFolium(1);
     EXPECT_EQ(1, df->getN());
+    delete df;
     df = new Sage::DescFolium(-1);
     EXPECT_EQ(-1, df->getN());
+    delete df;
     df = new Sage::DescFolium(1.1);
     EXPECT_FLOAT_EQ(1.1, df->getN());
+    delete df;
     df = new Sage::DescFolium(-1.1);
     EXPECT_FLOAT_EQ(-1.1, df->getN());
     df->setN(12);
     EXPECT_EQ(12, df->getN());
+    delete df;
 }
 
 TEST(Methods, mth1)
@@ -131,6 +136,7 @@ void action(Sage::DescFolium* df)
             break;
 
         case 10:
+            delete df;
             std::exit(0);
             break;
 
