@@ -1,7 +1,31 @@
 #include <iostream>
+#include <gtest/gtest.h>
 #include "DescFolium.h"
+#include "math.h"
 
-using namespace std;
+TEST(ChangingN, chn)
+{
+    Sage::DescFolium* df = new Sage::DescFolium(0);
+    EXPECT_EQ(0, df->getN());
+    df = new Sage::DescFolium(1);
+    EXPECT_EQ(1, df->getN());
+    df = new Sage::DescFolium(-1);
+    EXPECT_EQ(-1, df->getN());
+    df = new Sage::DescFolium(1.1);
+    EXPECT_FLOAT_EQ(1.1, df->getN());
+    df = new Sage::DescFolium(-1.1);
+    EXPECT_FLOAT_EQ(-1.1, df->getN());
+    df->setN(12);
+    EXPECT_EQ(12, df->getN());
+}
+
+TEST(Methods, mth1)
+{
+    Sage::DescFolium df;
+    const float PI = 3.14159, err = 0.0001;
+    EXPECT_NEAR(3/sqrt(2), df.getChord(), err);
+
+}
 
 void createMenu()
 {
@@ -118,6 +142,8 @@ void action(Sage::DescFolium* df)
 
 int main()
 {
+    testing::InitGoogleTest();
+    RUN_ALL_TESTS();
     Sage::DescFolium* df = NULL;
     createMenu();
     float n = Sage::getFloat();

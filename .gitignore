@@ -3,4 +3,6 @@
 !*.cpp
 !*.c
 !*.h
+!CMakeLists.txt
 !*/
+googletest-release-1.10.0/
