@@ -195,7 +195,7 @@ namespace Sage3
                             std::cout << ">> ";
                         else
                             std::cout << "   ";
-                        std::cout << i << ": " << this->qu->_value1 << " " << this->qu->_value2 << "\n";
+                        std::cout << i << ": " << this->qu[i]._value1 << " " << this->qu[i]._value2 << "\n";
                     }
                 }
                 else
@@ -206,7 +206,7 @@ namespace Sage3
                             std::cout << ">> ";
                         else
                             std::cout << "   ";
-                        std::cout << i << ": " << this->qu->_value1 << " " << this->qu->_value2 << "\n";
+                        std::cout << i << ": " << this->qu[i]._value1 << " " << this->qu[i]._value2 << "\n";
                     }
                 }       
             }
