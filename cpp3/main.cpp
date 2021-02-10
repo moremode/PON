@@ -60,6 +60,7 @@ void actions(Sage3::Queue* queue)
 int main()
 {
     Sage3::Queue* q = new Sage3::Queue();
+    Sage3::Queue q1 = 1;
     while (1)
     {
         printMenu();

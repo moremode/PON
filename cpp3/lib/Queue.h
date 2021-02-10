@@ -31,7 +31,7 @@ namespace Sage3
             friend std::istream& operator>>(std::istream& is, Queue& q);
             friend std::ostream& operator<<(std::ostream& os, Queue& q);
 
-            Queue operator=(Queue q);
+            Queue operator=(const Queue& q);
             Queue& operator+=(QueueElement el);
             QueueElement operator()();
             void state();

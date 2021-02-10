@@ -105,7 +105,7 @@ namespace Sage3
     }
 
 
-    Queue Queue::operator=(Queue queue)
+    Queue Queue::operator=(const Queue& queue)
     {
         this->len = queue.len;
         this->empty = queue.empty;
@@ -120,6 +120,7 @@ namespace Sage3
         {
             this->qu = nullptr;
         }
+        
         return *this;
     }
 

@@ -9,6 +9,8 @@ include_directories(${GTEST_INCLUDE_DIRS})
 add_executable(cpp3 main.cpp)
 add_executable(test test.cpp)
 
-target_link_libraries(cpp3 ${CMAKE_BINARY_DIR}/lib/libcpp3lib.a)
-target_link_libraries(test ${CMAKE_BINARY_DIR}/lib/libcpp3lib.a)
+add_subdirectory(lib)
+
+target_link_libraries(cpp3 cpp3lib)
+target_link_libraries(test cpp3lib)
 target_link_libraries(test ${GTEST_LIBRARIES} pthread)
